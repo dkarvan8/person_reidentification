@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Matching</title>
+  <style>
+    body {
+      background-color: #0b1120;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #video-container {
+      margin-top: 30px;
+    }
+    #liveFeed {
+      width: 720px;
+      height: auto;
+      border: 4px solid limegreen;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="match-canvas" width="640" height="480" style="border: 2px solid white;"></canvas>
+
+<script>
+  const canvas = document.getElementById('match-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const ws = new WebSocket("ws://127.0.0.1:8000/ws/match_feed");
+
+  ws.onmessage = function(event) {
+    const img = new Image();
+    img.src = 'data:image/jpeg;base64,' + event.data;
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+  };
+
+  ws.onerror = function(err) {
+    console.error("❌ WebSocket error:", err);
+  };
+
+  ws.onclose = function() {
+    console.warn("⚠️ WebSocket closed");
+  };
+</script>
+
+
+
+</body>
+
+</html>

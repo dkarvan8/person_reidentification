@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Person Matcher</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #2c3e50;
+        }
+
+        .header {
+            display: flex;
+            justify-content: flex-start; /* Align children to the start (left) */
+            align-items: center;
+            padding: 12px 24px;
+            background-color: #1a2b4c;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 5px solid #2980b9;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for exact centering */
+            text-align: center;
+            color: #ecf0f1;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-left img {
+            height: 60px;
+            margin-right: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .header-left img:hover {
+            transform: rotate(10deg) scale(1.1);
+        }
+        .header-right {
+            display: flex;
+            justify-content: flex-end; /* Right-align future content */
+        }
+
+        .footer {
+            background-color: #1a2b4c;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 12px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 14px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid #2980b9;
+        }
+
+        .main-container {
+            margin-top: 90px;
+            margin-bottom: 70px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-box {
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .video-box h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .video-box img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .scrollable-gallery::-webkit-scrollbar {
+  height: 8px;
+}
+.scrollable-gallery::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+.scrollable-gallery::-webkit-scrollbar-track {
+  background-color: #f4f4f4;
+}
+#live-video-container {
+  margin-top: 24px;
+  text-align: center;
+}
+
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="https://res.cloudinary.com/dxoq1rrh4/image/upload/v1721754287/left_xfp4qb.png" alt="Logo Left" />
+            <img src="https://res.cloudinary.com/dxoq1rrh4/image/upload/v1721739306/smartcity_jgrecd.png" alt="Logo Right" />
+        </div>
+        <h1 class="header-title">Person Identification</h1>
+    </div>
+
+    <div class="main-container">
+        <div class="video-box">
+            <h2>Live Video Feed</h2>
+            <img src="/video_feed" alt="Live Video">
+        </div>
+    </div>
+
+
+    
+<div style="text-align:center; margin-top: 30px;">
+    <button onclick="startStream()">▶ Start Matching</button>
+    <button onclick="resetSession()" style="margin-left: 10px; background-color: crimson;">🔁 Reset</button>
+</div>
+
+<div style="padding: 20px; position: relative;">
+  <h2>Detected Person Crops</h2>
+
+  <button onclick="scrollGallery(-1)" style="
+    position: absolute; 
+    left: 0; 
+    top: 50%; 
+    transform: translateY(-50%);
+    z-index: 2;
+    font-size: 24px;
+    background-color: #1a2b4c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+  ">⬅</button>
+
+  <div id="scroll-wrapper" style="
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    white-space: nowrap;
+    padding: 0 40px;
+  ">
+    <div id="gallery" style="
+      display: flex;
+      gap: 20px;
+    ">
+      <!-- Each page will be inserted as a 3x3 grid container -->
+    </div>
+  </div>
+
+  <button onclick="scrollGallery(1)" style="
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    font-size: 24px;
+    background-color: #1a2b4c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+  ">➡</button>
+</div>
+
+
+<div id="selected-preview" style="padding: 20px;"></div>
+
+<script src="/static/script.js"></script>
+
+
+    <div class="footer">
+        &copy; 2025 Smart City Living Lab. All rights reserved.
+    </div>
+
+    <div id="spinner" style="
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 1001;
+">
+    <span class="material-icons" style="font-size: 32px; animation: spin 1s linear infinite;">autorenew</span>
+    <br>Loading...
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+
+</body>
+</html>
