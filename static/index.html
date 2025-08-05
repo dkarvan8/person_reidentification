@@ -75,7 +75,7 @@
             margin-bottom: 70px;
             padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
         }
 
@@ -86,6 +86,7 @@
             border-radius: 12px;
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
             padding: 10px;
+            margin-bottom: 20px;
         }
 
         .video-box h2 {
@@ -97,22 +98,128 @@
             width: 100%;
             border-radius: 8px;
         }
+
+        .matching-section {
+            width: 90%;
+            max-width: 1000px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+        }
+
+        .matching-section.active {
+            display: block;
+        }
+
+        .matching-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .match-color { background: #00ff00; }
+        .no-match-color { background: #ff0000; }
+
         .scrollable-gallery::-webkit-scrollbar {
-  height: 8px;
-}
-.scrollable-gallery::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 4px;
-}
-.scrollable-gallery::-webkit-scrollbar-track {
-  background-color: #f4f4f4;
-}
-#live-video-container {
-  margin-top: 24px;
-  text-align: center;
-}
+            height: 8px;
+        }
+        .scrollable-gallery::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+        }
+        .scrollable-gallery::-webkit-scrollbar-track {
+            background-color: #f4f4f4;
+        }
 
+        #live-video-container {
+            margin-top: 24px;
+            text-align: center;
+        }
 
+        .status-indicator {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 1000;
+            font-size: 14px;
+        }
+
+        .status-indicator.matching {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .controls-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #1a2b4c;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: crimson;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -125,102 +232,134 @@
         <h1 class="header-title">Person Identification</h1>
     </div>
 
+    <!-- Status Indicator -->
+    <div id="statusIndicator" class="status-indicator">
+        Status: Ready
+    </div>
+
     <div class="main-container">
+        <!-- Camera Feeds Section -->
         <div class="video-box">
-            <h2>Live Video Feed</h2>
-            <img src="/video_feed" alt="Live Video">
+            <h3>Camera 1 Feed</h3>
+            <img id="cam0Feed" src="/video_feed/0" width="480" />
+
+            <h3>Camera 2 Feed</h3>
+            <img id="cam1Feed" src="/video_feed/1" width="480" />
+        </div>
+
+        <!-- Real-time Matching Section -->
+        <div id="matchingSection" class="matching-section">
+            <h2 style="text-align: center; margin-bottom: 15px;">🎯 Real-time Person Matching</h2>
+            
+            <div class="matching-legend">
+                <div class="legend-item">
+                    <div class="legend-color match-color"></div>
+                    <span>MATCH (Distance < 0.17)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color no-match-color"></div>
+                    <span>NO MATCH (Distance ≥ 0.17)</span>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <img id="matchingFeed" src="/video_feed" style="width: 100%; max-width: 800px; border-radius: 8px;" />
+            </div>
+            
+            <div class="controls-section">
+                <button class="btn btn-danger" onclick="stopMatching()">⏹️ Stop Matching</button>
+            </div>
         </div>
     </div>
 
-
-    
-<div style="text-align:center; margin-top: 30px;">
-    <button onclick="startStream()">▶ Start Matching</button>
-    <button onclick="resetSession()" style="margin-left: 10px; background-color: crimson;">🔁 Reset</button>
-</div>
-
-<div style="padding: 20px; position: relative;">
-  <h2>Detected Person Crops</h2>
-
-  <button onclick="scrollGallery(-1)" style="
-    position: absolute; 
-    left: 0; 
-    top: 50%; 
-    transform: translateY(-50%);
-    z-index: 2;
-    font-size: 24px;
-    background-color: #1a2b4c;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 6px 12px;
-    cursor: pointer;
-  ">⬅</button>
-
-  <div id="scroll-wrapper" style="
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    white-space: nowrap;
-    padding: 0 40px;
-  ">
-    <div id="gallery" style="
-      display: flex;
-      gap: 20px;
-    ">
-      <!-- Each page will be inserted as a 3x3 grid container -->
+    <!-- Controls Section -->
+    <div class="controls-section">
+        <button class="btn btn-primary" onclick="startStream()">▶ Start Detection</button>
+        <button class="btn btn-success" id="startMatchingBtn" onclick="startMatchingProcess()" style="display: none;">🎯 Start Matching</button>
+        <button class="btn btn-danger" onclick="resetSession()">🔁 Reset</button>
+        <button class="btn btn-warning" onclick="resetCameraFeeds()" title="Reset camera feeds if stuck">📹 Reset Cameras</button>
     </div>
-  </div>
 
-  <button onclick="scrollGallery(1)" style="
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    font-size: 24px;
-    background-color: #1a2b4c;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 6px 12px;
-    cursor: pointer;
-  ">➡</button>
-</div>
+    <!-- Person Crops Gallery -->
+    <div style="padding: 20px; position: relative;">
+        <h2>Detected Person Crops</h2>
 
+        <button onclick="scrollGallery(-1)" style="
+            position: absolute; 
+            left: 0; 
+            top: 50%; 
+            transform: translateY(-50%);
+            z-index: 2;
+            font-size: 24px;
+            background-color: #1a2b4c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 12px;
+            cursor: pointer;
+        ">⬅</button>
 
-<div id="selected-preview" style="padding: 20px;"></div>
+        <div id="scroll-wrapper" style="
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            white-space: nowrap;
+            padding: 0 40px;
+        ">
+            <div id="gallery" style="
+                display: flex;
+                gap: 20px;
+            ">
+                <!-- Each page will be inserted as a 3x3 grid container -->
+            </div>
+        </div>
 
-<script src="/static/script.js"></script>
+        <button onclick="scrollGallery(1)" style="
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            font-size: 24px;
+            background-color: #1a2b4c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 12px;
+            cursor: pointer;
+        ">➡</button>
+    </div>
 
+    <div id="selected-preview" style="padding: 20px;"></div>
+
+    <script src="/static/script.js"></script>
 
     <div class="footer">
         &copy; 2025 Smart City Living Lab. All rights reserved.
     </div>
 
     <div id="spinner" style="
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 20px;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 20px 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    z-index: 1001;
-">
-    <span class="material-icons" style="font-size: 32px; animation: spin 1s linear infinite;">autorenew</span>
-    <br>Loading...
-</div>
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        z-index: 1001;
+    ">
+        <span class="material-icons" style="font-size: 32px; animation: spin 1s linear infinite;">autorenew</span>
+        <br>Loading...
+    </div>
 
-<style>
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-</style>
-
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 
 </body>
 </html>
